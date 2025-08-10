@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kora Home - Carrito Funcional</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+      box-sizing: border-box;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      font-family: 'Playfair Display', serif;
+      background-color: #fffdfb;
+      margin: 0;
+      padding: 0;
+      color: #5e3d3b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #f7d7d0;
+      color: #5e3d3b;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      flex-grow: 1;
+    }
+    .menu-btn, .cart-btn {
+      background: none;
+      border: none;
+      color: #5e3d3b;
+      font-size: 1.8rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cart-btn {
+      position: relative;
+      font-size: 1.8rem;
+      margin-left: 1rem;
+    }
+    .cart-count {
+      position: absolute;
+      top: -6px;
+      right: -10px;
+      background: #cfa6a0;
+      color: #fff;
+      border-radius: 50%;
+      padding: 2px 7px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      user-select: none;
+    }
+    nav.menu {
+      display: none;
+      flex-direction: column;
+      background: white;
+      position: absolute;
+      top: 56px;
+      left: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-width: 160px;
+      z-index: 1001;
+      user-select: none;
+    }
+    nav.menu.show {
+      display: flex;
+    }
+    nav.menu a {
+      padding: 1rem;
+      text-decoration: none;
+      color: #5e3d3b;
+      border-bottom: 1px solid #eee;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+    nav.menu a:last-child {
+      border-bottom: none;
+    }
+    nav.menu a:hover,
+    nav.menu a:focus {
+      background-color: #f9e4df;
+      outline: none;
+    }
+    .carousel {
+      background-color: #fceae7;
+      text-align: center;
+      padding: 1rem;
+      font-weight: bold;
+      color: #5e3d3b;
+      user-select: none;
+    }
+    main.container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem 2rem;
+      flex: 1 0 auto;
+    }
+    .grid-productos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .producto {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      height: 430px; /* más espacio para imagen */
+      justify-content: space-between;
+      user-select: none;
+    }
+    .producto .imagen-producto {
+      width: 100%;
+      height: 170px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+    }
+    .producto h3 {
+      color: #704d4a;
+      margin: 0 0 0.3rem 0;
+      font-size: 1.2rem;
+    }
+    .producto .precio {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #cfa6a0;
+      margin-bottom: 0.5rem;
+    }
+    .producto p {
+      color: #4d4d4d;
+      margin: 0 0 0.7rem 0;
+      flex-grow: 1;
+      font-size: 0.95rem;
+    }
+    .cantidad-control {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0.5rem 0;
+      gap: 0.5rem;
+    }
+    .cantidad-control button {
+      background-color: #e8b3a7;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    .cantidad-control button:hover,
+    .cantidad-control button:focus {
+      background-color: #c07f76;
+      outline: none;
+    }
+    .cantidad-control .cantidad {
+      font-weight: bold;
+      font-size: 1.1rem;
+      min-width: 24px;
+      display: inline-block;
+      text-align: center;
+      user-select: none;
+    }
+    .boton-agregar {
+      background-color: #cfa6a0;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .boton-agregar:hover,
+    .boton-agregar:focus {
+      background-color: #b5897e;
+      outline: none;
+    }
+
+    /* Carrito estilizado */
+    aside.carrito {
+      position: fixed;
+      right: 0;
+      top: 60px;
+      width: 350px;
+      max-height: calc(100vh - 80px);
+      background: #f7d7d0;
+      color: #5e3d3b;
+      padding: 1rem;
+      box-shadow: -3px 0 10px rgba(0,0,0,0.12);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 9999;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      border-radius: 0 0 0 12px;
+      user-select: none;
+    }
+    aside.carrito.abierto {
+      transform: translateX(0);
+    }
+    aside.carrito h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .carrito-item {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #d9b7b0;
+      padding-bottom: 0.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .carrito-item strong {
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+    .carrito-item .precio {
+      color: #cfa6a0;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .carrito-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+    .carrito-item-controls button {
+      background: #cfa6a0;
+      color: #5e3d3b;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 0 8px;
+      font-size: 1rem;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    .carrito-item-controls button:hover,
+    .carrito-item-controls button:focus {
+      background-color: #b5897e;
+      color: #fff;
+      outline: none;
+    }
+    .carrito-item-subtotal {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      user-select: none;
+    }
+    #carrito-total {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      font-size: 1.3rem;
+      padding-top: 1rem;
+      border-top: 1px solid #d9b7b0;
+      text-align: center;
+      user-select: none;
+    }
+    .boton-comprar-whatsapp {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 1rem auto 0 auto;
+      display: block;
+      width: 90%;
+      max-width: 280px;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .boton-comprar-whatsapp:hover,
+    .boton-comprar-whatsapp:focus {
+      background-color: #1ebe57;
+      outline: none;
+    }
+    .cerrar-carrito-btn {
+      background: #cfa6a0;
+      color: #5e3d3b;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      align-self: center;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .cerrar-carrito-btn:hover,
+    .cerrar-carrito-btn:focus {
+      background-color: #b5897e;
+      color: #fff;
+      outline: none;
+    }
+
+    /* Secciones Nosotros y Ayuda */
+    .seccion-tarjeta {
+      background: white;
+      padding: 1.5rem 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      margin: 2rem 0;
+      color: #5e3d3b;
+      user-select: none;
+    }
+    .seccion-tarjeta h2 {
+      font-size: 1.6rem;
+      margin-top: 0;
+      border-bottom: 2px solid #b27b73;
+      padding-bottom: 0.3rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .seccion-tarjeta p,
+    .seccion-tarjeta form {
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .seccion-tarjeta a {
+      color: #b27b73;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .seccion-tarjeta a:hover,
+    .seccion-tarjeta a:focus {
+      text-decoration: underline;
+      outline: none;
+    }
+    .seccion-tarjeta form input[type="text"],
+    .seccion-tarjeta form select,
+    .seccion-tarjeta form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      resize: vertical;
+      color: #5e3d3b;
+    }
+    .seccion-tarjeta form button {
+      background-color: #cfa6a0;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .seccion-tarjeta form button:hover,
+    .seccion-tarjeta form button:focus {
+      background-color: #b5897e;
+      outline: none;
+    }
+
+    /* Botón fijo WhatsApp */
+    .whatsapp-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #25d366;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 10000;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      text-decoration: none;
+    }
+    .whatsapp-btn:hover,
+    .whatsapp-btn:focus {
+      background-color: #1ebe57;
+      outline: none;
+    }
+
+    /* Pie de página */
+    footer {
+      background-color: #f7d7d0;
+      color: #5e3d3b;
+      text-align: center;
+      padding: 1rem 1rem;
+      font-size: 0.9rem;
+      user-select: none;
+      flex-shrink: 0;
+      border-top: 1px solid #d9b7b0;
+    }
+    footer a {
+      color: #5e3d3b;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    footer a:hover,
+    footer a:focus {
+      color: #b27b73;
+      outline: none;
+    }
+
+    /* Responsivo */
+    @media (max-width: 1024px) {
+      aside.carrito {
+        width: 300px;
+        max-height: calc(100vh - 80px);
+      }
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: row;
+        align-items: center;
+      }
+      nav.menu {
+        position: static;
+        width: 100%;
+        border: none;
+        display: none;
+        flex-direction: row;
+        justify-content: space-around;
+        background: transparent;
+        box-shadow: none;
+      }
+      nav.menu.show {
+        display: flex;
+      }
+      nav.menu a {
+        border: none;
+        padding: 0.5rem 0;
+      }
+      main.container {
+        margin: 1rem;
+        padding: 0.5rem;
+      }
+      aside.carrito {
+        width: 100%;
+        height: 50vh;
+        top: auto;
+        bottom: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 50vh;
+      }
+    }
+    @media (max-width: 480px) {
+      .producto {
+        height: auto;
+      }
+      .cantidad-control button {
+        padding: 0.3rem 0.5rem;
+        font-size: 1rem;
+      }
+      .boton-agregar {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="menu-btn" onclick="toggleMenu()" aria-label="Abrir menú">☰</button>
+    <h1>Kora Home</h1>
+    <button class="cart-btn" onclick="toggleCarrito()" aria-label="Abrir carrito">
+      🛒 <span class="cart-count" id="cart-count">0</span>
+    </button>
+    <nav class="menu" id="menu">
+      <a href="#productos" onclick="toggleMenu()">Productos</a>
+      <a href="#nosotros" onclick="toggleMenu()">Nosotros</a>
+      <a href="#ayuda" onclick="toggleMenu()">Ayuda</a>
+    </nav>
+  </header>
+
+  <div class="carousel" aria-live="polite" role="banner">
+    "Haz de tu hogar un espacio cálido, con estilo y a tu alcance."
+  </div>
+
+  <main class="container">
+    <section id="productos">
+      <h2>Productos</h2>
+      <div class="grid-productos" id="productos-grid">
+        <!-- Productos se cargan dinámicamente -->
+      </div>
+    </section>
+
+    <section id="nosotros" class="seccion-tarjeta" tabindex="0">
+      <h2>Nosotros</h2>
+      <p>Somos un emprendimiento familiar Kimonnense, dedicado a ofrecer productos para el hogar con calidad y estilo. Trabajamos con mucho amor y dedicación para que tu espacio se sienta único y especial.</p>
+    </section>
+
+    <!-- Sección Ayuda debajo de productos -->
+    <section id="ayuda" class="seccion-tarjeta">
+      <h2>Ayuda</h2>
+      <p>Si tienes dudas o consultas, contáctanos:</p>
+      <p><a href="https://wa.me/50662204304" target="_blank" rel="noopener noreferrer">WhatsApp: 6220-4304</a></p>
+      <p><a href="mailto:tuemail@ejemplo.com">Correo: tuemail@ejemplo.com</a></p>
+      <form>
+        <input type="text" name="nombre" placeholder="Tu nombre" required />
+        <input type="text" name="contacto" placeholder="Tu número o correo" required />
+        <select name="preferencia">
+          <option value="whatsapp">Quiero ser contactado por WhatsApp</option>
+          <option value="correo">Quiero ser contactado por Correo</option>
+        </select>
+        <textarea name="mensaje" placeholder="Escribe tu consulta..." rows="4"></textarea>
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+  </main>
+  <aside class="carrito" id="carrito" aria-label="Carrito de compras" aria-live="polite" aria-atomic="true">
+    <h2>Carrito</h2>
+    <button class="cerrar-carrito-btn" onclick="toggleCarrito()" aria-label="Cerrar carrito">Cerrar ×</button>
+    <div id="carrito-items" tabindex="0">
+      <p>Tu carrito está vacío.</p>
+    </div>
+    <div id="carrito-total">Total: ₡0</div>
+    <button class="boton-comprar-whatsapp" onclick="comprarPorWhatsapp()">Comprar por WhatsApp</button>
+  </aside>
+
+  <a href="https://wa.me/50662204304" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="Contactar por WhatsApp">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M20.52 3.48a11.94 11.94 0 00-17-1.53L0 24l6.43-1.57A11.92 11.92 0 0012 24c6.63 0 12-5.37 12-12a11.93 11.93 0 00-3.48-8.52zm-8.5 16.56a8.23 8.23 0 01-4.31-1.3l-.3-.18-3.83.93.98-3.72-.2-.33a8.24 8.24 0 011.3-11.11 8.25 8.25 0 0111.31 1.3 8.24 8.24 0 01-7.96 13.12zm4.52-6.83c-.25-.13-1.47-.72-1.7-.81-.23-.08-.4-.12-.57.12s-.65.8-.8.97c-.15.16-.3.18-.54.06-.25-.13-1.04-.38-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.15-.25-.01-.38.11-.51.11-.11.25-.29.37-.44.12-.15.17-.25.25-.42.08-.16.04-.31-.02-.44-.06-.13-.57-1.37-.78-1.87-.2-.49-.41-.42-.57-.43l-.48-.01c-.17 0-.44.06-.66.31s-.87.85-.87 2.07c0 1.22.89 2.4 1.01 2.57.13.17 1.75 2.67 4.24 3.74.6.25 1.05.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29z"/>
+    </svg>
+  </a>
+
+  <footer>
+    &copy; 2025 Kora Home. Todos los derechos reservados. &nbsp;|&nbsp; <a href="#nosotros">Nosotros</a> &nbsp;|&nbsp; <a href="#ayuda">Ayuda</a>
+  </footer>
+
+<script>
+  // Datos de productos (20 ejemplo, pon tus imágenes en carpeta img/productos)
+  const productos = [
+    { id: 1, nombre: "Alfombra Bohemia", descripcion: "Alfombra tejida a mano para dar calidez.", precio: 12000, imagen: "img/productos/alfombra_bohemia.jpg" },
+    { id: 2, nombre: "Velas Aromáticas", descripcion: "Velas hechas con cera natural y aroma a lavanda.", precio: 3500, imagen: "img/productos/velas_aromaticas.jpg" },
+    { id: 3, nombre: "Cuadro Moderno", descripcion: "Arte moderno para tus paredes.", precio: 8000, imagen: "img/productos/cuadro_moderno.jpg" },
+    { id: 4, nombre: "Maceta Cerámica", descripcion: "Ideal para plantas pequeñas y medianas.", precio: 5000, imagen: "img/productos/maceta_ceramica.jpg" },
+    { id: 5, nombre: "Almohada de Plumas", descripcion: "Almohada suave y cómoda para un buen descanso.", precio: 15000, imagen: "img/productos/almohada_plumas.jpg" },
+    { id: 6, nombre: "Juego de Sábanas", descripcion: "Sábanas de algodón suave y duradero.", precio: 18000, imagen: "img/productos/juego_sabanas.jpg" },
+    { id: 7, nombre: "Cortinas Ligeras", descripcion: "Cortinas que permiten la entrada de luz natural.", precio: 10000, imagen: "img/productos/cortinas_ligeras.jpg" },
+    { id: 8, nombre: "Lámpara de Mesa", descripcion: "Lámpara con diseño elegante para tu sala.", precio: 12000, imagen: "img/productos/lampara_mesa.jpg" },
+    { id: 9, nombre: "Mesa Auxiliar", descripcion: "Mesa pequeña para colocar objetos decorativos.", precio: 20000, imagen: "img/productos/mesa_auxiliar.jpg" },
+    { id: 10, nombre: "Reloj de Pared", descripcion: "Reloj con diseño vintage para cualquier habitación.", precio: 8500, imagen: "img/productos/reloj_pared.jpg" },
+    { id: 11, nombre: "Almohada de Espuma", descripcion: "Almohada ergonómica para soporte cervical.", precio: 14000, imagen: "img/productos/almohada_espuma.jpg" },
+    { id: 12, nombre: "Juego de Toallas", descripcion: "Toallas suaves y absorbentes para baño.", precio: 7000, imagen: "img/productos/juego_toallas.jpg" },
+    { id: 13, nombre: "Porta Velas", descripcion: "Soporte decorativo para velas pequeñas.", precio: 3000, imagen: "img/productos/porta_velas.jpg" },
+    { id: 14, nombre: "Espejo Decorativo", descripcion: "Espejo con marco elegante para sala o baño.", precio: 11000, imagen: "img/productos/espejo_decorativo.jpg" },
+    { id: 15, nombre: "Alfombra Pequeña", descripcion: "Alfombra para espacios pequeños y acogedores.", precio: 6500, imagen: "img/productos/alfombra_pequena.jpg" },
+    { id: 16, nombre: "Lámpara de Pie", descripcion: "Iluminación suave para rincones especiales.", precio: 22000, imagen: "img/productos/lampara_pie.jpg" },
+    { id: 17, nombre: "Cojines Decorativos", descripcion: "Juego de 2 cojines con diseño moderno.", precio: 9000, imagen: "img/productos/cojines_decorativos.jpg" },
+    { id: 18, nombre: "Jarrón Cerámico", descripcion: "Jarrón para flores con acabado artesanal.", precio: 7000, imagen: "img/productos/jarron_ceramico.jpg" },
+    { id: 19, nombre: "Mesa de Centro", descripcion: "Mesa funcional para sala con almacenamiento.", precio: 30000, imagen: "img/productos/mesa_centro.jpg" },
+    { id: 20, nombre: "Almohada Memory Foam", descripcion: "Almohada de espuma viscoelástica para máximo confort.", precio: 20000, imagen: "img/productos/almohada_memory_foam.jpg" }
+  ];
+
+  // Objeto para cantidades en el carrito y en listado
+  let cantidades = {}; // Cantidad seleccionada para agregar (por producto)
+  let carritoItems = {}; // Productos en carrito con cantidad
+
+  // Inicializar cantidades a 0
+  productos.forEach(p => cantidades[p.id] = 0);
+
+  // Render de productos en el grid
+  function renderProductos() {
+    const grid = document.getElementById('productos-grid');
+    grid.innerHTML = '';
+    productos.forEach(producto => {
+      const cantidadEnCarrito = carritoItems[producto.id]?.cantidad || 0;
+      const cantidadSeleccionada = cantidades[producto.id];
+      // Contenedor de producto
+      const div = document.createElement('div');
+      div.className = 'producto';
+      div.innerHTML = `
+        <div class="imagen-producto" style="background-image: url('${producto.imagen}');" role="img" aria-label="${producto.nombre}"></div>
+        <h3>${producto.nombre}</h3>
+        <div class="precio">₡${producto.precio.toLocaleString()}</div>
+        <p>${producto.descripcion}</p>
+        <div class="cantidad-control">
+          <button aria-label="Disminuir cantidad de ${producto.nombre}" onclick="modificarCantidad(${producto.id}, -1)">-</button>
+          <span class="cantidad" id="cantidad-${producto.id}">${cantidadSeleccionada + cantidadEnCarrito}</span>
+          <button aria-label="Aumentar cantidad de ${producto.nombre}" onclick="modificarCantidad(${producto.id}, 1)">+</button>
+        </div>
+        <button class="boton-agregar" onclick="agregarAlCarrito(${producto.id})" aria-label="Agregar ${producto.nombre} al carrito">Agregar</button>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  // Modificar cantidad (para sumar o restar) y sincronizar en listado y carrito
+  function modificarCantidad(id, cambio) {
+    const actualEnCarrito = carritoItems[id]?.cantidad || 0;
+    let nuevaCantidad = cantidades[id] + cambio;
+
+    // Queremos que el número mostrado sea la suma: en carrito + seleccionado para agregar
+    // Pero la selección para agregar no puede ser negativa
+    nuevaCantidad = Math.max(0, nuevaCantidad);
+
+    cantidades[id] = nuevaCantidad;
+
+    // Actualizamos el número en el span del producto: mostrar la suma (carrito + seleccionado)
+    document.getElementById(`cantidad-${id}`).textContent = actualEnCarrito + nuevaCantidad;
+  }
+
+  // Agregar al carrito (la cantidad que esté seleccionada)
+  function agregarAlCarrito(id) {
+    if (cantidades[id] === 0) {
+      alert('Por favor, selecciona una cantidad mayor a cero.');
+      return;
+    }
+
+    const producto = productos.find(p => p.id === id);
+    if (!producto) return;
+
+    if (carritoItems[id]) {
+      carritoItems[id].cantidad += cantidades[id];
+    } else {
+      carritoItems[id] = {
+        ...producto,
+        cantidad: cantidades[id]
+      };
+    }
+
+    // Reiniciar la cantidad seleccionada para agregar
+    cantidades[id] = 0;
+
+    // Actualizar cantidad en listado a la que ya está en carrito
+    document.getElementById(`cantidad-${id}`).textContent = carritoItems[id].cantidad;
+
+    actualizarCarrito();
+  }
+
+  // Actualizar UI del carrito
+  function actualizarCarrito() {
+    const carritoDiv = document.getElementById('carrito-items');
+    carritoDiv.innerHTML = '';
+    let total = 0;
+    const ids = Object.keys(carritoItems);
+    if (ids.length === 0) {
+      carritoDiv.innerHTML = '<p>Tu carrito está vacío.</p>';
+    } else {
+      ids.forEach(id => {
+        const item = carritoItems[id];
+        total += item.precio * item.cantidad;
+
+        // Crear item en carrito
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'carrito-item';
+        itemDiv.innerHTML = `
+          <strong>${item.nombre}</strong>
+          <div>Cantidad: <span id="carrito-cantidad-${id}">${item.cantidad}</span></div>
+          <div class="precio">Precio unidad: ₡${item.precio.toLocaleString()}</div>
+          <div class="carrito-item-subtotal">Subtotal: ₡${(item.precio * item.cantidad).toLocaleString()}</div>
+          <div class="carrito-item-controls">
+            <button aria-label="Disminuir cantidad de ${item.nombre}" onclick="cambiarCantidadCarrito(${id}, -1)">-</button>
+            <button aria-label="Aumentar cantidad de ${item.nombre}" onclick="cambiarCantidadCarrito(${id}, 1)">+</button>
+            <button aria-label="Eliminar ${item.nombre} del carrito" onclick="eliminarDelCarrito(${id})" style="background:#b04545; color:#fff; padding: 2px 6px; border-radius:4px;">✕</button>
+          </div>
+        `;
+        carritoDiv.appendChild(itemDiv);
+      });
+    }
+    document.getElementById('carrito-total').textContent = `Total: ₡${total.toLocaleString()}`;
+    document.getElementById('cart-count').textContent = ids.length;
+  }
+
+  // Cambiar cantidad en carrito
+  function cambiarCantidadCarrito(id, cambio) {
+    if (!carritoItems[id]) return;
+
+    carritoItems[id].cantidad += cambio;
+    if (carritoItems[id].cantidad <= 0) {
+      delete carritoItems[id];
+      cantidades[id] = 0;
+    }
+
+    actualizarCarrito();
+    renderProductos(); // para actualizar las cantidades mostradas en productos
+  }
+
+  // Eliminar producto del carrito
+  function eliminarDelCarrito(id) {
+    delete carritoItems[id];
+    cantidades[id] = 0;
+    actualizarCarrito();
+    renderProductos();
+  }
+
+  // Toggle menú hamburguesa
+  function toggleMenu() {
+    const menu = document.getElementById('menu');
+    menu.classList.toggle('show');
+  }
+
+  // Toggle carrito
+  function toggleCarrito() {
+    const carrito = document.getElementById('carrito');
+    carrito.classList.toggle('abierto');
+  }
+
+  // Comprar por WhatsApp
+  function comprarPorWhatsapp() {
+    if (Object.keys(carritoItems).length === 0) {
+      alert('El carrito está vacío.');
+      return;
+    }
+    let mensaje = 'Hola, quiero hacer el siguiente pedido:%0A';
+    for (const id in carritoItems) {
+      const item = carritoItems[id];
+      mensaje += `- ${item.nombre}: ${item.cantidad} x ₡${item.precio.toLocaleString()} = ₡${(item.precio * item.cantidad).toLocaleString()}%0A`;
+    }
+    const total = Object.values(carritoItems).reduce((acc, cur) => acc + cur.precio * cur.cantidad, 0);
+    mensaje += `%0ATotal: ₡${total.toLocaleString()}`;
+    const url = `https://wa.me/50662204304?text=${mensaje}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  // Cerrar menú al hacer click fuera o scroll (opcional)
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('menu');
+    const btnMenu = document.querySelector('.menu-btn');
+    if (!menu.contains(e.target) && e.target !== btnMenu) {
+      menu.classList.remove('show');
+    }
+  });
+
+  // Inicializar
+  renderProductos();
+  actualizarCarrito();
+
+</script>
+
+</body>
+</html>
